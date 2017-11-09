@@ -2,6 +2,7 @@ package gh.out386.lamp;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 
 import com.sdsmdg.harjot.crollerTest.Croller;
 
@@ -9,6 +10,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
+    private Croller redSeek;
+    private Croller greenSeek;
+    private Croller blueSeek;
+    private Croller whiteSeek;
+    private Croller tempSeek;
     private ExecutorService httpThreadPool;
     private int red = 0;
     private int green = 0;
@@ -17,7 +23,7 @@ public class MainActivity extends Activity {
     private int temp = 0;
     private boolean isRgbChanged = false;
     private boolean isTempChanged = false;
-
+    private boolean isSeekChanging = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,18 +32,18 @@ public class MainActivity extends Activity {
 
         httpThreadPool = Executors.newSingleThreadExecutor();
 
-        Croller redSeek = findViewById(R.id.redScroller);
-        Croller greenSeek = findViewById(R.id.greenScroller);
-        Croller blueSeek = findViewById(R.id.blueScroller);
-        Croller whiteSeek = findViewById(R.id.whiteScroller);
-        Croller tempSeek = findViewById(R.id.tempScroller);
+        redSeek = findViewById(R.id.redScroller);
+        greenSeek = findViewById(R.id.greenScroller);
+        blueSeek = findViewById(R.id.blueScroller);
+        whiteSeek = findViewById(R.id.whiteScroller);
+        tempSeek = findViewById(R.id.tempScroller);
 
         redSeek.setOnProgressChangedListener((progress) -> {
             // Prevents issues when listener fires on activity create
             // Assuming all Crollers use the same min
             if (progress > redSeek.getMin())
                 isRgbChanged = true;
-            if (isRgbChanged) {
+            if (isRgbChanged && !isSeekChanging) {
                 red = progress;
                 setRgb();
             }
@@ -45,7 +51,7 @@ public class MainActivity extends Activity {
         greenSeek.setOnProgressChangedListener(progress -> {
             if (progress > redSeek.getMin())
                 isRgbChanged = true;
-            if (isRgbChanged) {
+            if (isRgbChanged && !isSeekChanging) {
                 green = progress;
                 setRgb();
             }
@@ -53,7 +59,7 @@ public class MainActivity extends Activity {
         blueSeek.setOnProgressChangedListener(progress -> {
             if (progress > redSeek.getMin())
                 isRgbChanged = true;
-            if (isRgbChanged) {
+            if (isRgbChanged && !isSeekChanging) {
                 blue = progress;
                 setRgb();
             }
@@ -82,8 +88,19 @@ public class MainActivity extends Activity {
     }
 
     private void setTemp(int temp) {
-        httpThreadPool.execute(new RequestRunnable(
-                Utils.buildUrlHellandTemp(temp, white)
-        ));
+        TempModel model = Utils.buildUrlHellandTemp(temp, white);
+        red = model.r;
+        green = model.g;
+        blue = model.b;
+        setSeek();
+        httpThreadPool.execute(new RequestRunnable(model.url));
+    }
+
+    private void setSeek() {
+        isSeekChanging = true;
+        redSeek.setProgress(red);
+        greenSeek.setProgress(green);
+        blueSeek.setProgress(blue);
+        new Handler().postDelayed(() -> isSeekChanging = false, 2000);
     }
 }

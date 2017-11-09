@@ -14,11 +14,10 @@ import java.net.URL;
  */
 
 public class RequestRunnable implements Runnable {
-    URL url;
+    private URL url;
 
     RequestRunnable(String url) {
 
-        Log.i("whatever", "RequestRunnable: ");
         try {
             this.url = new URL(url);
         } catch (MalformedURLException e) {

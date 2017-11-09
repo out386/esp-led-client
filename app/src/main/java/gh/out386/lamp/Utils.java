@@ -21,7 +21,7 @@ public class Utils {
      * @param white The current white value
      * @return URL with RGB values of the target URL, and the given white value
      */
-    static String buildUrlHellandTemp(int temp, int white) {
+    static TempModel buildUrlHellandTemp(int temp, int white) {
         int r;
         int g;
         int b;
@@ -62,6 +62,6 @@ public class Utils {
                     b = 255;
             }
         }
-        return buildUrlRgb(r, g, b, white);
+        return new TempModel(r, g, b, white, buildUrlRgb(r, g, b, white));
     }
 }
