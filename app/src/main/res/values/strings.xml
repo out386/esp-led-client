@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Lamp</string>
+    <string name="seek_red">Red</string>
+    <string name="seek_green">Green</string>
+    <string name="seek_blue">Blue</string>
+    <string name="seek_white">White</string>
+    <string name="seek_temp">Temperature</string>
+</resources>
