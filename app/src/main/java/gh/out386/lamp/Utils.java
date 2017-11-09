@@ -1,14 +1,19 @@
 package gh.out386.lamp;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by J on 11/9/2017.
  */
 
 public class Utils {
+    final static String BASE_URL = "http://192.168.43.200";
+    final static String GET_URL = BASE_URL + "/get";
+
     static String buildUrlRgb(int red, int green, int blue, int white) {
         // Not checking max/min values, as the server does that anyway
-        return "http://192.168.43.200/setrgb?r="
-        + red
+        return BASE_URL + "/setrgb?r=" + red
         + "&g=" + green
         + "&b=" + blue
         + "&w=" + white;
@@ -63,5 +68,23 @@ public class Utils {
             }
         }
         return new TempModel(r, g, b, white, buildUrlRgb(r, g, b, white));
+    }
+
+    static TempModel parseJson(String json) {
+        int r = 0;
+        int g = 0;
+        int b = 0;
+        int w = 0;
+        JSONObject object = null;
+        try {
+            object = new JSONObject(json);
+            r = object.getInt("r");
+            g = object.getInt("g");
+            b = object.getInt("b");
+            w = object.getInt("w");
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
+        return new TempModel(r, g, b, w, null);
     }
 }

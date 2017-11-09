@@ -1,8 +1,13 @@
 package gh.out386.lamp;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.sdsmdg.harjot.crollerTest.Croller;
 
@@ -24,6 +29,12 @@ public class MainActivity extends Activity {
     private boolean isRgbChanged = false;
     private boolean isTempChanged = false;
     private boolean isSeekChanging = false;
+    private BroadcastReceiver finishReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            finish();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +91,11 @@ public class MainActivity extends Activity {
                 setTemp(progress);
             }
         });
+
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(finishReceiver, new IntentFilter(GetAsync.ACTION_SERVER_FAIL));
+        new GetAsync(this, redSeek, greenSeek, blueSeek, whiteSeek)
+                .execute(Utils.GET_URL);
     }
 
     private void setRgb() {
@@ -102,5 +118,12 @@ public class MainActivity extends Activity {
         greenSeek.setProgress(green);
         blueSeek.setProgress(blue);
         new Handler().postDelayed(() -> isSeekChanging = false, 2000);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this)
+                .unregisterReceiver(finishReceiver);
     }
 }
