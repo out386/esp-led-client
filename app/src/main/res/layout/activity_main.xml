@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="gh.out386.lamp.MainActivity">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:orientation="vertical"
+        android:paddingTop="30dp">
+
+        <SeekBar
+            android:id="@+id/redScroller"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:max="255"/>
+
+        <SeekBar
+            android:id="@+id/greenScroller"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:max="255"  />
+
+        <SeekBar
+            android:id="@+id/blueScroller"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:max="255" />
+
+        <SeekBar
+            android:id="@+id/whiteScroller"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:max="255" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:gravity="fill">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/titleText"
+                android:text="@string/randomTitle"
+                android:paddingTop="5dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:textSize="14sp"
+                android:id="@+id/randomTitle"/>
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/descText"
+                android:text="@string/randomDesc"
+                android:paddingTop="5dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:textSize="12sp"
+                android:layout_below="@id/randomTitle"/>
+
+            <Switch
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/randomSwitch"
+                android:layout_alignParentEnd="true"
+                android:padding="10dp"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:background="@color/colorPrimaryDark">
+        <com.sdsmdg.harjot.crollerTest.Croller
+            android:id="@+id/tempScroller"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="20dp"
+            app:back_circle_color="#EDEDED"
+            app:indicator_color="#0B3C49"
+            app:indicator_width="10"
+            app:is_continuous="true"
+            app:label="@string/seek_temp"
+            app:label_color="#000000"
+            app:main_circle_color="#FFFFFF"
+            app:max="11000"
+            app:min="1000"
+            app:progress_primary_color="#0B3C49"
+            app:progress_secondary_color="#EEEEEE"
+            app:progress_primary_stroke_width="10"
+            app:progress_secondary_stroke_width="8"
+            app:back_circle_radius="20"
+            app:start_offset="45" />
+
+        <com.sdsmdg.harjot.crollerTest.Croller
+            android:id="@+id/brScroller"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="20dp"
+            app:back_circle_color="#EDEDED"
+            app:indicator_color="#0B3C49"
+            app:indicator_width="10"
+            app:is_continuous="true"
+            app:label="@string/seek_brightness"
+            app:label_color="#000000"
+            app:main_circle_color="#FFFFFF"
+            app:max="200"
+            app:min="-1"
+            app:progress_primary_color="#0B3C49"
+            app:progress_secondary_color="#EEEEEE"
+            app:progress_primary_stroke_width="10"
+            app:progress_secondary_stroke_width="8"
+            app:back_circle_radius="20"
+            app:start_offset="45" />
+
+    </LinearLayout>
+
+</LinearLayout>

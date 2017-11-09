@@ -1,0 +1,2 @@
+include ':app', ':crollerlib'
+project(':crollerlib').projectDir = new File('Croller/croller')
