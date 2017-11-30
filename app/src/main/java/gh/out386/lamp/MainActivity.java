@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.sdsmdg.harjot.crollerTest.Croller;
@@ -15,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
+    private final int FIRE_DELAY_MS = 40;
     private Croller redSeek;
     private Croller greenSeek;
     private Croller blueSeek;
@@ -29,6 +31,10 @@ public class MainActivity extends Activity {
     private boolean isRgbChanged = false;
     private boolean isTempChanged = false;
     private boolean isSeekChanging = false;
+    private boolean isChangeForTemp = false;
+    private Handler setValuesHandler;
+    private Runnable setValuesRunnable;
+    private long lastFireTime;
     private BroadcastReceiver finishReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -42,7 +48,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         httpThreadPool = Executors.newSingleThreadExecutor();
-
+        setValuesHandler = new Handler();
         redSeek = findViewById(R.id.redScroller);
         greenSeek = findViewById(R.id.greenScroller);
         blueSeek = findViewById(R.id.blueScroller);
@@ -88,7 +94,7 @@ public class MainActivity extends Activity {
                 isTempChanged = true;
             if (isTempChanged) {
                 temp = progress;
-                setTemp(progress);
+                setTemp();
             }
         });
 
@@ -99,17 +105,43 @@ public class MainActivity extends Activity {
     }
 
     private void setRgb() {
-        httpThreadPool.execute(new RequestRunnable(
-                Utils.buildUrlRgb(red, green, blue, white)));
+        if (isChangeForTemp) {
+            isChangeForTemp = false;
+            lastFireTime = 0;
+        }
+        long currentTime = SystemClock.uptimeMillis();
+        if (currentTime - lastFireTime >= FIRE_DELAY_MS) {
+            if (setValuesRunnable != null)
+                setValuesHandler.removeCallbacks(setValuesRunnable);
+            setValuesRunnable = () -> {
+                String url = Utils.buildUrlRgb(red, green, blue, white);
+                httpThreadPool.execute(new RequestRunnable(url));
+            };
+            lastFireTime = currentTime;
+            setValuesHandler.postDelayed(setValuesRunnable, FIRE_DELAY_MS);
+        }
     }
 
-    private void setTemp(int temp) {
-        TempModel model = Utils.buildUrlHellandTemp(temp, white);
-        red = model.r;
-        green = model.g;
-        blue = model.b;
-        setSeek();
-        httpThreadPool.execute(new RequestRunnable(model.url));
+    private void setTemp() {
+        if (!isChangeForTemp) {
+            isChangeForTemp = true;
+            lastFireTime = 0;
+        }
+        long currentTime = SystemClock.uptimeMillis();
+        if (currentTime - lastFireTime >= FIRE_DELAY_MS) {
+            if (setValuesRunnable != null)
+                setValuesHandler.removeCallbacks(setValuesRunnable);
+            setValuesRunnable = () -> {
+                TempModel model = Utils.buildUrlHellandTemp(temp, white);
+                red = model.r;
+                green = model.g;
+                blue = model.b;
+                setSeek();
+                httpThreadPool.execute(new RequestRunnable(model.url));
+            };
+            lastFireTime = currentTime;
+            setValuesHandler.postDelayed(setValuesRunnable, FIRE_DELAY_MS);
+        }
     }
 
     private void setSeek() {
