@@ -121,16 +121,11 @@
         android:orientation="horizontal"
         android:padding="10dp"
         android:background="@color/colorPrimaryDark">
-
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
         <com.sdsmdg.harjot.crollerTest.Croller
             android:id="@+id/tempScroller"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="2"
+            android:layout_weight="1"
             android:layout_margin="20dp"
             app:back_circle_color="#EDEDED"
             app:indicator_color="#0B3C49"
@@ -147,10 +142,28 @@
             app:progress_secondary_stroke_width="8"
             app:back_circle_radius="20"
             app:start_offset="45" />
-        <FrameLayout
-            android:layout_width="wrap_content"
+
+        <com.sdsmdg.harjot.crollerTest.Croller
+            android:id="@+id/brScroller"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:layout_margin="20dp"
+            app:back_circle_color="#EDEDED"
+            app:indicator_color="#0B3C49"
+            app:indicator_width="10"
+            app:is_continuous="true"
+            app:label="@string/seek_brightness"
+            app:label_color="#000000"
+            app:main_circle_color="#FFFFFF"
+            app:max="200"
+            app:min="0"
+            app:progress_primary_color="#0B3C49"
+            app:progress_secondary_color="#EEEEEE"
+            app:progress_primary_stroke_width="10"
+            app:progress_secondary_stroke_width="8"
+            app:back_circle_radius="20"
+            app:start_offset="45" />
 
     </LinearLayout>
 
