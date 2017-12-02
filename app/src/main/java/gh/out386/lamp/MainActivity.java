@@ -44,6 +44,7 @@ public class MainActivity extends Activity {
     private Handler brResetHandler;
     private Runnable brResetRunnable;
     private long lastFireTime;
+    private ProcessMusic processMusic;
     private BroadcastReceiver finishReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -67,6 +68,8 @@ public class MainActivity extends Activity {
         brSeek = findViewById(R.id.brScroller);
         brSeek.setProgress(100);
 
+        processMusic = new ProcessMusic();
+        processMusic.initVisualizer();
         redSeek.setOnProgressChangedListener((progress) -> {
             // Prevents issues when listener fires on activity create
             // Assuming all Crollers use the same min
