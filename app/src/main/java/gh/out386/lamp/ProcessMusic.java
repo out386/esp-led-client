@@ -10,19 +10,24 @@ import android.util.Pair;
 
 public class ProcessMusic {
     final int SLOP = 5;
-    final int OFFSET = 7;
-    final int MULTIPLIER = 7;
+    final int OFFSET = 5;
+    final int MULTIPLIER = 10;
+    final int MULTIPLIER_H = 3;
     int dA, dB, dC;
     private Visualizer visualizer;
     private Pair<Integer, Pair<Integer, Integer>> buckets;
     private int range;
+    private int maxRange;
+    private VisListener visListener;
 
-    public ProcessMusic() {
-        range = Visualizer.getCaptureSizeRange()[0];
+    public ProcessMusic(VisListener visListener) {
+        this.visListener = visListener;
+        range = 64;//Visualizer.getCaptureSizeRange()[0];
+        maxRange = 200;//Visualizer.getCaptureSizeRange()[1];
         visualizer = new Visualizer(0);
-        visualizer.setCaptureSize(range);
+        visualizer.setCaptureSize(maxRange);
         visualizer.setScalingMode(Visualizer.SCALING_MODE_NORMALIZED);
-        buckets = getBuckets(range / 2 - 2);
+        buckets = getBuckets(range / 2 - 2, maxRange / 2 - 2);
         dA = buckets.first;
         dB = buckets.second.first - buckets.first;
         dC = buckets.second.second - buckets.second.first;
@@ -63,14 +68,15 @@ public class ProcessMusic {
                 }
                 System.out.print(" " + fft[1]);
                 System.out.println();*/
-                new Thread(() -> {
-                    int amplituides[] = new int[range / 2];
-                    System.out.print(Visualizer.getMaxCaptureRate());
-                    for (int i = 1; i < fft.length / 2; i++) {
-                        amplituides[i - 1] = (int) (Math.hypot(fft[i * 2], fft[i * 2 + 1]));
+                //new Thread(() -> {
+                    int amplituides[] = new int[maxRange / 2];
+                    System.out.print(Visualizer.getCaptureSizeRange()[1] + " ");
+                    for (int i = 1; i < maxRange / 2; i++) {
+                        //amplituides[i - 1] = (int) (Math.hypot(fft[i * 2], fft[i * 2 + 1]));
+                        amplituides[i - 1] = fft[i * 2] * fft[i * 2] + fft[i * 2 + 1] * fft[i * 2 + 1];
                     }
 
-                    int l, m, h;
+                    float l, m, h;
                     int dAT = dA;
                     int dBT = dB;
                     int dCT = dC;
@@ -83,10 +89,11 @@ public class ProcessMusic {
                             dAT--;
                     }
                     if (dAT > 0)
-                        l = temp / dAT + 1;
+                        l = temp / dAT;
                     else
-                        l = 1;
-                    l = l * MULTIPLIER;
+                        l = OFFSET;
+                    l = (float) Math.sqrt(l);//(50 * Math.log10(l));
+                    l = l * MULTIPLIER_H;
                     if (l > 255)
                         l = 255;
 
@@ -97,9 +104,10 @@ public class ProcessMusic {
                         else dBT--;
                     }
                     if (dBT > 0)
-                        m = temp / dBT + OFFSET;
+                        m = temp / dBT;
                     else
                         m = OFFSET;
+                    m = (float) Math.sqrt(m);//(50 * Math.log10(m));
                     m = m * MULTIPLIER;
                     if (m > 255)
                         m = 255;
@@ -111,24 +119,26 @@ public class ProcessMusic {
                         else dCT--;
                     }
                     if (dCT > 0)
-                        h = temp / dCT + OFFSET;
+                        h = temp / dCT;
                     else
                         h = OFFSET;
+                    h = (float) Math.sqrt(h);//(50 * Math.log10(h));
                     h = h * MULTIPLIER;
                     if (h > 255)
                         h = 255;
-                    Log.i("music", l + "  " + m + "  " + h);
+                    Log.i("music", (int) l + "  " + (int) m + "  " + (int) h);
+                    visListener.OnValue((int) l, (int) m, (int) h);
                    /*for (int amplituide : amplituides) {
                         System.out.print("  " + amplituide);
                     }
                     System.out.println();*/
-                }).start();
+                //}).start();
             }
         }, 20000, false, true);
         visualizer.setEnabled(true);
     }
 
-    private Pair<Integer, Pair<Integer, Integer>> getBuckets(int range) {
+    private Pair<Integer, Pair<Integer, Integer>> getBuckets(int range, int max) {
         int a, b, c;
         int by3 = range / 3;
         int diff3;
@@ -141,10 +151,19 @@ public class ProcessMusic {
             if (!(diff3 % 2 == 0))
                 addA++;
         }
-        a = by3 - (int)(by3 / 1.3) + addA;
-        b = a + by3 - by3 / 2;
-        c = b + by3 + addB + (int)(by3 / 1.3) + by3 / 2;
-        Log.i("meh", "getBuckets: " + a + "  " + b + "  " + c + "  " + range);
-        return new Pair<>(a, new Pair<>(b, c));
+        a = by3 /*- (int)(by3 / 2)*/ + addA;
+        b = a + by3 /*- by3 / 2*/;
+        c = b + by3 + addB /*+ (int)(by3 / 2) + by3 / 2*/;
+        Log.i("meh", "getBuckets: " + a + "  " + b + "  " + c + "  " + max);
+        return new Pair<>(a, new Pair<>(b, max));
+    }
+
+    public void stop() {
+        visualizer.setEnabled(false);
+        visualizer.release();
+    }
+
+    interface VisListener {
+        void OnValue(int r, int g, int b);
     }
 }

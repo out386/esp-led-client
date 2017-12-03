@@ -15,7 +15,7 @@ import com.sdsmdg.harjot.crollerTest.Croller;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements ProcessMusic.VisListener{
     private final int FIRE_DELAY_MS = 40;
     private Croller redSeek;
     private Croller greenSeek;
@@ -68,7 +68,7 @@ public class MainActivity extends Activity {
         brSeek = findViewById(R.id.brScroller);
         brSeek.setProgress(100);
 
-        processMusic = new ProcessMusic();
+        processMusic = new ProcessMusic(this);
         processMusic.initVisualizer();
         redSeek.setOnProgressChangedListener((progress) -> {
             // Prevents issues when listener fires on activity create
@@ -217,6 +217,16 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    public void OnValue(int r, int g, int b) {
+        red = 0;
+        green = 0;
+        red = r;
+        green = g;
+        blue = b;
+        setRgb();
+    }
+
     private void setSeek() {
         isSeekChanging = true;
         redSeek.setProgress(red);
@@ -241,6 +251,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        processMusic.stop();
         LocalBroadcastManager.getInstance(this)
                 .unregisterReceiver(finishReceiver);
     }
