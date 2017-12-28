@@ -12,4 +12,8 @@
     <string name="server_fail_button">OK</string>
     <string name="randomTitle">Auto Crossfade</string>
     <string name="randomDesc">Automatically fade between colours</string>
+    <string name="notif_running">Random mode running</string>
+    <string name="notif_subtext">Tap to open</string>
+    <string name="notif_channel_name">Crossfade mode</string>
+    <string name="notif_channel_desc">Shows notifications about the crossfade mode</string>
 </resources>

@@ -19,7 +19,7 @@ public class Utils {
     public static final int BRIGHTNESS = 4;
     public static final int TEMP = 5;
 
-    static String buildUrlRgb(int red, int green, int blue, int white) {
+    public static String buildUrlRgb(int red, int green, int blue, int white) {
         // Not checking max/min values, as the server does that anyway
         return BASE_URL + "/setrgb?r=" + red
                 + "&g=" + green

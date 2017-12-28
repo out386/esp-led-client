@@ -16,7 +16,7 @@ import java.net.URL;
 public class RequestRunnable implements Runnable {
     private URL url;
 
-    RequestRunnable(String url) {
+    public RequestRunnable(String url) {
 
         try {
             this.url = new URL(url);

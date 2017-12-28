@@ -1,22 +1,29 @@
 package gh.out386.lamp;
 
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.SeekBar;
 import android.widget.Switch;
 
 import com.sdsmdg.harjot.crollerTest.Croller;
+
+import gh.out386.lamp.services.RandomService;
 
 public class MainActivity extends AppCompatActivity {
     private SeekBar redSeek;
@@ -38,6 +45,33 @@ public class MainActivity extends AppCompatActivity {
         }
     };
     private RgbViewModel rgbViewModel;
+    private RandomService randomService;
+    private boolean randomBound = false;
+    private MutableLiveData<Integer> randomRed;
+    private MutableLiveData<Integer> randomGreen;
+    private MutableLiveData<Integer> randomBlue;
+    private MutableLiveData<Boolean> randomRunning;
+    private ServiceConnection randomServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            RandomService.LocalBinder binder = (RandomService.LocalBinder) service;
+            randomService = binder.getService();
+            randomRed = randomService.getRed();
+            randomGreen = randomService.getGreen();
+            randomBlue = randomService.getBlue();
+            randomRunning = randomService.getIsRandomStarted();
+            randomBound = true;
+            setupRandomObservers();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            randomBound = false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +97,21 @@ public class MainActivity extends AppCompatActivity {
                 .registerReceiver(finishReceiver, new IntentFilter(GetAsync.ACTION_SERVER_FAIL));
         new GetAsync(this, redSeek, greenSeek, blueSeek, whiteSeek)
                 .execute(Utils.GET_URL);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(this, RandomService.class);
+        bindService(intent, randomServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unbindService(randomServiceConnection);
+        randomBound = false;
     }
 
     private void setupSeekbarColours() {
@@ -161,8 +210,10 @@ public class MainActivity extends AppCompatActivity {
             if (progress > tempSeek.getMin())
                 rgbViewModel.setTemp(progress);
         });
-        randomSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            rgbViewModel.setRandom(isChecked);
+        randomSwitch.setOnClickListener(v -> {
+            if (randomBound) {
+                setRandomServiceState(randomSwitch.isChecked());
+            }
         });
     }
 
@@ -189,6 +240,33 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void setupRandomObservers() {
+        randomRed.observe(this, value -> {
+            if (value != null)
+                setSeek(value, -1, -1, -1, -1);
+        });
+        randomGreen.observe(this, value -> {
+            if (value != null)
+                setSeek(-1, value, -1, -1, -1);
+        });
+        randomBlue.observe(this, value -> {
+            if (value != null)
+                setSeek(-1, -1, value, -1, -1);
+        });
+        randomRunning.observe(this, value -> setSlidersEnabled(!value));
+    }
+
+    private void setSlidersEnabled(Boolean enabled) {
+        if (enabled == null)
+            return;
+        redSeek.setEnabled(enabled);
+        greenSeek.setEnabled(enabled);
+        blueSeek.setEnabled(enabled);
+        whiteSeek.setEnabled(enabled);
+        brSeek.setEnabled(enabled);
+        tempSeek.setEnabled(enabled);
+        randomSwitch.setChecked(!enabled);
+    }
 
     private void setSeek(int red, int green, int blue, int white, int brightness) {
         if (red > -1)
@@ -203,15 +281,19 @@ public class MainActivity extends AppCompatActivity {
             brSeek.setProgress(brightness);
     }
 
+    private void setRandomServiceState(boolean start) {
+        if (start) {
+            startService(new Intent(getApplicationContext(), RandomService.class));
+            randomService.startRandom(whiteSeek.getProgress());
+        } else {
+            randomService.stopRandom();
+        }
+    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this)
                 .unregisterReceiver(finishReceiver);
-    }
-
-    public interface RandomRgb {
-        void setRgb(int r, int g, int b);
     }
 }

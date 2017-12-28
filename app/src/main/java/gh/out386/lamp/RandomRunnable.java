@@ -1,15 +1,20 @@
 package gh.out386.lamp;
 
+import gh.out386.lamp.interfaces.RandomRgb;
+
 /**
- * Kanged from https://gist.github.com/jamesotron/766994
+ * Source: https://gist.github.com/jamesotron/766994
  */
 
 public class RandomRunnable implements Runnable {
-    private MainActivity.RandomRgb listener;
+    private RandomRgb listener;
     private boolean started = true;
-    private int [] rgbColour = new int [3];
+    private int[] rgbColour = new int[3];
+    private int decColour = 0;
+    private int incColour;
+    private int innerLoop = 0;
 
-    RandomRunnable(MainActivity.RandomRgb listener) {
+    public RandomRunnable(RandomRgb listener) {
         this.listener = listener;
         rgbColour[0] = 255;
         rgbColour[1] = 0;
@@ -18,32 +23,38 @@ public class RandomRunnable implements Runnable {
 
     @Override
     public void run() {
-        outer: while (started) {
+        outer:
+        while (true) {
             // Choose the colours to increment and decrement.
-            for (int decColour = 0; decColour < 3; decColour += 1) {
-                int incColour = decColour == 2 ? 0 : decColour + 1;
+            for (; decColour < 3; decColour++) {
+                incColour = decColour == 2 ? 0 : decColour + 1;
 
                 // cross-fade the two colours.
-                for (int i = 0; i < 255; i += 1) {
-                    if (! started)
+                for (; innerLoop < 255; innerLoop++) {
+                    if (!started) {
+                        innerLoop--;
                         break outer;
-                    rgbColour[decColour] -= 1;
-                    rgbColour[incColour] += 1;
+                    }
+                    rgbColour[decColour]--;
+                    rgbColour[incColour]++;
 
                     listener.setRgb(rgbColour[0], rgbColour[1], rgbColour[2]);
                     try {
-                        Thread.sleep(20);
-                    } catch (InterruptedException ignored) {}
+                        Thread.sleep(40);
+                    } catch (InterruptedException ignored) {
+                    }
                 }
+                innerLoop = 0;
             }
+            decColour = 0;
         }
     }
 
-    void stop() {
+    public void stop() {
         started = false;
     }
 
-    void start() {
+    public void start() {
         started = true;
     }
 }

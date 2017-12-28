@@ -24,16 +24,13 @@ public class RgbViewModel extends ViewModel {
     private int oG = 0;
     private int oB = 0;
     private int oW = 0;
-    private RandomRunnable randomRunnable;
     private ExecutorService httpThreadPool;
-    private Thread randomThread;
     private Handler setValuesHandler;
     private Runnable setValuesRunnable;
     private Handler brResetHandler;
     private Runnable brResetRunnable;
     private long lastFireTime;
     private boolean isChangeForTemp = false;
-    private boolean isRandom;
     private final int FIRE_DELAY_MS = 40;
 
     RgbViewModel() {
@@ -97,26 +94,6 @@ public class RgbViewModel extends ViewModel {
 
     public MutableLiveData<Integer> getBrightness() {
         return brightness;
-    }
-
-    public void setRandom(boolean start) {
-        if (start) {
-            if (randomRunnable == null) {
-                randomRunnable = new RandomRunnable((r, g, b) -> {
-                    red.postValue(r);
-                    green.postValue(g);
-                    blue.postValue(b);
-                    adjustRgb();
-                });
-            } else
-                randomRunnable.start();
-            if (randomThread == null)
-                randomThread = new Thread(randomRunnable);
-            randomThread.start();
-        } else {
-            if (randomThread != null)
-                randomRunnable.stop();
-        }
     }
 
     private void adjustRgb() {
