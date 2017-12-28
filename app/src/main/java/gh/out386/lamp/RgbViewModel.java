@@ -46,22 +46,22 @@ public class RgbViewModel extends ViewModel {
         brResetHandler = new Handler();
     }
 
-    public void setRed(int red) {
+    public void setRed(Integer red) {
         this.red.setValue(red);
         adjustRgb();
     }
 
-    public void setGreen(int green) {
+    public void setGreen(Integer green) {
         this.green.setValue(green);
         adjustRgb();
     }
 
-    public void setBlue(int blue) {
+    public void setBlue(Integer blue) {
         this.blue.setValue(blue);
         adjustRgb();
     }
 
-    public void setWhite(int white) {
+    public void setWhite(Integer white) {
         this.white.setValue(white);
         adjustRgb();
     }

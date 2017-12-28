@@ -95,8 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(finishReceiver, new IntentFilter(GetAsync.ACTION_SERVER_FAIL));
-        new GetAsync(this, redSeek, greenSeek, blueSeek, whiteSeek)
-                .execute(Utils.GET_URL);
+        setupInitialGet();
     }
 
     @Override
@@ -112,6 +111,23 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         unbindService(randomServiceConnection);
         randomBound = false;
+    }
+
+    private void setupInitialGet() {
+        GetAsync getAsync = new GetAsync(this);
+        MutableLiveData<Integer> initialRed = getAsync.getRed();
+        MutableLiveData<Integer> initialGreen = getAsync.getGreen();
+        MutableLiveData<Integer> initialBlue = getAsync.getBlue();
+        MutableLiveData<Integer> initialWhite = getAsync.getWhite();
+        if (initialRed != null)
+            initialRed.observe(this, value -> rgbViewModel.setRed(value));
+        if (initialGreen != null)
+            initialGreen.observe(this, value -> rgbViewModel.setGreen(value));
+        if (initialBlue != null)
+            initialBlue.observe(this, value -> rgbViewModel.setBlue(value));
+        if (initialWhite != null)
+            initialWhite.observe(this, value -> rgbViewModel.setWhite(value));
+        getAsync.execute(Utils.GET_URL);
     }
 
     private void setupSeekbarColours() {
@@ -253,12 +269,26 @@ public class MainActivity extends AppCompatActivity {
             if (value != null)
                 setSeek(-1, -1, value, -1, -1);
         });
-        randomRunning.observe(this, value -> setSlidersEnabled(!value));
+        randomRunning.observe(this, value -> {
+            if (value == null)
+                return;
+            if (!value) {
+                updateVmValues(
+                        randomRed.getValue(), randomGreen.getValue(), randomBlue.getValue(), null);
+            }
+            setSlidersEnabled(!value);
+        });
     }
 
-    private void setSlidersEnabled(Boolean enabled) {
-        if (enabled == null)
-            return;
+    private void updateVmValues(Integer red, Integer green, Integer blue, Integer white) {
+        rgbViewModel.setRed(red);
+        rgbViewModel.setGreen(green);
+        rgbViewModel.setBlue(blue);
+        if (white != null)
+            rgbViewModel.setWhite(white);
+    }
+
+    private void setSlidersEnabled(boolean enabled) {
         redSeek.setEnabled(enabled);
         greenSeek.setEnabled(enabled);
         blueSeek.setEnabled(enabled);

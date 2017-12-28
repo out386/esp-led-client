@@ -2,6 +2,7 @@ package gh.out386.lamp;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -18,25 +19,17 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-/**
- * Created by J on 11/9/2017.
- */
-
 public class GetAsync extends AsyncTask<String, Void, String> {
     static final String ACTION_SERVER_FAIL = "serverFail";
     private ProgressDialog pd;
     private WeakReference<Context> contextRef;
-    private WeakReference<SeekBar> redSeekRef;
-    private WeakReference<SeekBar> greenSeekRef;
-    private WeakReference<SeekBar> blueSeekRef;
-    private WeakReference<SeekBar> whiteSeekRef;
+    private MutableLiveData<Integer> red = new MutableLiveData<>();
+    private MutableLiveData<Integer> green = new MutableLiveData<>();
+    private MutableLiveData<Integer> blue = new MutableLiveData<>();
+    private MutableLiveData<Integer> white = new MutableLiveData<>();
 
-    public GetAsync(Context context, SeekBar red, SeekBar green, SeekBar blue, SeekBar white) {
+    public GetAsync(Context context) {
         contextRef = new WeakReference<>(context);
-        redSeekRef = new WeakReference<>(red);
-        greenSeekRef = new WeakReference<>(green);
-        blueSeekRef = new WeakReference<>(blue);
-        whiteSeekRef = new WeakReference<>(white);
         pd = new ProgressDialog(context);
     }
 
@@ -71,7 +64,6 @@ public class GetAsync extends AsyncTask<String, Void, String> {
             BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             while ((s = br.readLine()) != null)
                 o.append(s);
-            //Log.i("response", "run: " + o.toString());
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -100,19 +92,33 @@ public class GetAsync extends AsyncTask<String, Void, String> {
             }
             return;
         }
-        SeekBar red;
-        SeekBar green;
-        SeekBar blue;
-        SeekBar white;
         TempModel model = Utils.parseJson(s);
-        if ((red = redSeekRef.get()) != null)
-            red.setProgress(model.r);
-        if ((green = greenSeekRef.get()) != null)
-            green.setProgress(model.g);
-        if ((blue = blueSeekRef.get()) != null)
-            blue.setProgress(model.b);
-        if ((white = whiteSeekRef.get()) != null)
-            white.setProgress(model.w);
+        if (red != null)
+            red.setValue(model.r);
+        if (green != null)
+            green.setValue(model.g);
+        if (blue != null)
+            blue.setValue(model.b);
+        if (white != null)
+            white.setValue(model.w);
+        // As this data should only be fetched once
+        red = green = blue = white = null;
         pd.dismiss();
+    }
+
+    public MutableLiveData<Integer> getRed() {
+        return red;
+    }
+
+    public MutableLiveData<Integer> getGreen() {
+        return green;
+    }
+
+    public MutableLiveData<Integer> getBlue() {
+        return blue;
+    }
+
+    public MutableLiveData<Integer> getWhite() {
+        return white;
     }
 }
