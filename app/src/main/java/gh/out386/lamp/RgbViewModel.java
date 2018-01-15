@@ -33,7 +33,7 @@ public class RgbViewModel extends ViewModel {
     private boolean isChangeForTemp = false;
     private final int FIRE_DELAY_MS = 40;
 
-    RgbViewModel() {
+    public RgbViewModel() {
         red.setValue(0);
         green.setValue(0);
         blue.setValue(0);
