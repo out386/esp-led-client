@@ -4,24 +4,34 @@ import android.media.audiofx.Visualizer;
 import android.util.Log;
 import android.util.Pair;
 
+import java.util.concurrent.ArrayBlockingQueue;
+
 /**
  * Created by J on 12/2/2017.
  */
 
 public class ProcessMusic {
-    final int SLOP = 5;
-    final int OFFSET = 5;
-    final int MULTIPLIER = 10;
-    final int MULTIPLIER_H = 3;
+    private final int SLOP = 5;
+    private final int OFFSET = 5;
+    private final int MULTIPLIER = 10;
+    private final int MULTIPLIER_H = 3;
+    private int averageLength;
     int dA, dB, dC;
     private Visualizer visualizer;
     private Pair<Integer, Pair<Integer, Integer>> buckets;
     private int range;
     private int maxRange;
     private VisListener visListener;
+    private ArrayBlockingQueue<Float> averagingQueueL;
+    private ArrayBlockingQueue<Float> averagingQueueM;
+    private ArrayBlockingQueue<Float> averagingQueueH;
+    private float averageL = 0f;
+    private float averageM = 0f;
+    private float averageH = 0f;
 
-    public ProcessMusic(VisListener visListener) {
+    public ProcessMusic(VisListener visListener, int averageLength) {
         this.visListener = visListener;
+        this.averageLength = averageLength;
         range = 64;//Visualizer.getCaptureSizeRange()[0];
         maxRange = 200;//Visualizer.getCaptureSizeRange()[1];
         visualizer = new Visualizer(0);
@@ -31,6 +41,15 @@ public class ProcessMusic {
         dA = buckets.first;
         dB = buckets.second.first - buckets.first;
         dC = buckets.second.second - buckets.second.first;
+
+        averagingQueueL = new ArrayBlockingQueue<>(averageLength, true);
+        averagingQueueM = new ArrayBlockingQueue<>(averageLength, true);
+        averagingQueueH = new ArrayBlockingQueue<>(averageLength, true);
+        for (int i = 0; i < averageLength; i++) {
+            averagingQueueL.offer(-1f);
+            averagingQueueM.offer(-1f);
+            averagingQueueH.offer(-1f);
+        }
     }
 
     public void initVisualizer() {
@@ -126,8 +145,8 @@ public class ProcessMusic {
                     h = h * MULTIPLIER;
                     if (h > 255)
                         h = 255;
-                    Log.i("music", (int) l + "  " + (int) m + "  " + (int) h);
-                    visListener.OnValue((int) l, (int) m, (int) h);
+                    //Log.i("music", (int) l + "  " + (int) m + "  " + (int) h);
+                    sendValue(l, m, h);
                    /*for (int amplituide : amplituides) {
                         System.out.print("  " + amplituide);
                     }
@@ -161,6 +180,26 @@ public class ProcessMusic {
     public void stop() {
         visualizer.setEnabled(false);
         visualizer.release();
+    }
+
+    private void sendValue(float l, float m, float h) {
+        float avgL = l / averageLength;
+        float avgM = m / averageLength;
+        float avgH = h / averageLength;
+        Float t;
+        if ((t = averagingQueueL.poll()) != null && t > -1)
+            averageL -= t;
+        if ((t = averagingQueueM.poll()) != null && t > -1)
+            averageM -= t;
+        if ((t = averagingQueueH.poll()) != null && t > -1)
+            averageH -= t;
+        averageL += avgL;
+        averageM += avgM;
+        averageH += avgH;
+        averagingQueueL.offer(avgL);
+        averagingQueueM.offer(avgM);
+        averagingQueueH.offer(avgH);
+        visListener.OnValue(Math.round(averageL), Math.round(averageM), Math.round(averageH));
     }
 
     interface VisListener {

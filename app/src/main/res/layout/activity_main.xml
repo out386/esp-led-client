@@ -7,6 +7,13 @@
     android:orientation="vertical"
     tools:context="gh.out386.lamp.MainActivity">
 
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/averageSeek"
+        android:max="12"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"

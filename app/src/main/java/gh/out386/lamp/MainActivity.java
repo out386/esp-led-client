@@ -9,13 +9,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
+import android.widget.SeekBar;
 
 import com.sdsmdg.harjot.crollerTest.Croller;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends Activity implements ProcessMusic.VisListener{
+public class MainActivity extends Activity implements ProcessMusic.VisListener {
     private final int FIRE_DELAY_MS = 40;
     private Croller redSeek;
     private Croller greenSeek;
@@ -66,10 +67,34 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener{
         whiteSeek = findViewById(R.id.whiteScroller);
         tempSeek = findViewById(R.id.tempScroller);
         brSeek = findViewById(R.id.brScroller);
+        SeekBar averageSeek = findViewById(R.id.averageSeek);
         brSeek.setProgress(100);
 
-        processMusic = new ProcessMusic(this);
+        averageSeek.setProgress(3);
+        processMusic = new ProcessMusic(this, averageSeek.getProgress());
         processMusic.initVisualizer();
+
+        averageSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser && progress > 0) {
+                    if (processMusic != null)
+                        processMusic.stop();
+                    processMusic = new ProcessMusic(MainActivity.this, progress);
+                    processMusic.initVisualizer();
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
         redSeek.setOnProgressChangedListener((progress) -> {
             // Prevents issues when listener fires on activity create
             // Assuming all Crollers use the same min
@@ -252,6 +277,7 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener{
     protected void onDestroy() {
         super.onDestroy();
         processMusic.stop();
+        processMusic = null;
         LocalBroadcastManager.getInstance(this)
                 .unregisterReceiver(finishReceiver);
     }
