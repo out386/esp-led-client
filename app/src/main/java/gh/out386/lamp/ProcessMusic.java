@@ -13,8 +13,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class ProcessMusic {
     private final int SLOP = 5;
     private final int OFFSET = 5;
-    private final int MULTIPLIER = 10;
-    private final int MULTIPLIER_H = 3;
+    private final int MULTIPLIER = 13;
+    private final int MULTIPLIER_L = 9;
     private int averageLength;
     int dA, dB, dC;
     private Visualizer visualizer;
@@ -112,7 +112,7 @@ public class ProcessMusic {
                     else
                         l = OFFSET;
                     l = (float) Math.sqrt(l);//(50 * Math.log10(l));
-                    l = l * MULTIPLIER_H;
+                    l = l * MULTIPLIER_L;
                     if (l > 255)
                         l = 255;
 
