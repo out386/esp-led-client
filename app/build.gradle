@@ -24,5 +24,7 @@ android {
 }
 
 dependencies {
-    api 'com.sdsmdg.harjot:croller:1.0.7'
+    implementation 'com.android.support:support-v4:' + rootProject.supportLibVersion
+    implementation 'com.android.support:appcompat-v7:' + rootProject.supportLibVersion
+    implementation 'android.arch.lifecycle:extensions:1.0.0'
 }
