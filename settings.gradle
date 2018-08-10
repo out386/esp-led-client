@@ -1,2 +1,2 @@
-include ':app', ':crollerlib'
-project(':crollerlib').projectDir = new File('Croller/croller')
+include ':app', ':croller'
+project(':croller').projectDir = new File('Croller/croller/croller')
