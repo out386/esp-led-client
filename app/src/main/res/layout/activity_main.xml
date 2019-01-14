@@ -20,28 +20,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:max="255"/>
+            android:max="1023"/>
 
         <SeekBar
             android:id="@+id/greenScroller"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:max="255"  />
+            android:max="1023"  />
 
         <SeekBar
             android:id="@+id/blueScroller"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:max="255" />
+            android:max="1023" />
 
         <SeekBar
             android:id="@+id/whiteScroller"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:max="255" />
+            android:max="1023" />
 
         <RelativeLayout
             android:layout_width="match_parent"

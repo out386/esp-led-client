@@ -16,7 +16,7 @@ public class RandomRunnable implements Runnable {
 
     public RandomRunnable(RandomRgb listener) {
         this.listener = listener;
-        rgbColour[0] = 255;
+        rgbColour[0] = 1023;
         rgbColour[1] = 0;
         rgbColour[2] = 0;
     }
@@ -30,7 +30,7 @@ public class RandomRunnable implements Runnable {
                 incColour = decColour == 2 ? 0 : decColour + 1;
 
                 // cross-fade the two colours.
-                for (; innerLoop < 255; innerLoop++) {
+                for (; innerLoop < 1023; innerLoop++) {
                     if (!started) {
                         innerLoop--;
                         break outer;

@@ -23,9 +23,8 @@ public class Utils {
     }
 
     /**
-     * Algorithm by Tanner Helland
-     * Takes a temperature in Kelvin, and returns an URL with the RGB values for that temperature
-     * Source: http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code
+     * Algorithm by Tanner Helland Takes a temperature in Kelvin, and returns an URL with the RGB
+     * values for that temperature Source: http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code
      *
      * @param temp  The target temperature in Kelvin. Min 1000, max 40000
      * @param white The current white value
@@ -72,6 +71,9 @@ public class Utils {
                     b = 255;
             }
         }
+        r = (int) (r * 4.011764706);
+        g = (int) (g * 4.011764706);
+        b = (int) (b * 4.011764706);
         return new TempModel(r, g, b, white, buildRgbMessage(r, g, b, white));
     }
 

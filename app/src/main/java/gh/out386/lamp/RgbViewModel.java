@@ -167,14 +167,10 @@ public class RgbViewModel extends ViewModel {
                 tG = (int) (oG * (brightness / 100f));
                 tB = (int) (oB * (brightness / 100f));
                 tW = (int) (oW * (brightness / 100f));
-                if (tR > 255)
-                    tR = 255;
-                if (tG > 255)
-                    tG = 255;
-                if (tB > 255)
-                    tB = 255;
-                if (tW > 255)
-                    tW = 255;
+                tR = tR > 1023 ? 1023 : tR;
+                tG = tG > 1023 ? 1023 : tG;
+                tB = tB > 1023 ? 1023 : tB;
+                tW = tW > 1023 ? 1023 : tW;
                 red.setValue(tR);
                 green.setValue(tG);
                 blue.setValue(tB);
