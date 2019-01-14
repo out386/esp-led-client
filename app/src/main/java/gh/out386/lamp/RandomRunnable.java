@@ -40,7 +40,7 @@ public class RandomRunnable implements Runnable {
 
                     listener.setRgb(rgbColour[0], rgbColour[1], rgbColour[2]);
                     try {
-                        Thread.sleep(20);
+                        Thread.sleep(4);
                     } catch (InterruptedException ignored) {
                     }
                 }
