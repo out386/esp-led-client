@@ -4,10 +4,11 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.util.Log;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import gh.out386.lamp.network.RequestRunnable;
 
 /**
  * Created by J on 12/25/2017.
@@ -106,7 +107,7 @@ public class RgbViewModel extends ViewModel {
             if (setValuesRunnable != null)
                 setValuesHandler.removeCallbacks(setValuesRunnable);
             setValuesRunnable = () -> {
-                String url = Utils.buildUrlRgb(
+                String url = Utils.buildRgbMessage(
                         Utils.getInt(red), Utils.getInt(green), Utils.getInt(blue), Utils.getInt(white));
                 resetBr();
                 httpThreadPool.execute(new RequestRunnable(url));
@@ -135,13 +136,13 @@ public class RgbViewModel extends ViewModel {
             if (setValuesRunnable != null)
                 setValuesHandler.removeCallbacks(setValuesRunnable);
             setValuesRunnable = () -> {
-                TempModel model = Utils.buildUrlHellandTemp(
+                TempModel model = Utils.buildHellandTempMessage(
                         Utils.getInt(temp), Utils.getInt(white));
                 red.setValue(model.r);
                 green.setValue(model.g);
                 blue.setValue(model.b);
                 resetBr();
-                httpThreadPool.execute(new RequestRunnable(model.url));
+                httpThreadPool.execute(new RequestRunnable(model.data));
             };
             lastFireTime = currentTime;
             setValuesHandler.postDelayed(setValuesRunnable, FIRE_DELAY_MS);
@@ -186,7 +187,7 @@ public class RgbViewModel extends ViewModel {
                     brResetRunnable = this::resetBr;
                     brResetHandler.postDelayed(brResetRunnable, 1000);
                 }
-                String url = Utils.buildUrlRgb(tR, tG, tB, tW);
+                String url = Utils.buildRgbMessage(tR, tG, tB, tW);
                 httpThreadPool.execute(new RequestRunnable(url));
             };
             lastFireTime = currentTime;

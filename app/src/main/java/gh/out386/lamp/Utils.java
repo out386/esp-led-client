@@ -5,6 +5,8 @@ import android.arch.lifecycle.MutableLiveData;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Locale;
+
 /**
  * Created by J on 11/9/2017.
  */
@@ -12,19 +14,12 @@ import org.json.JSONObject;
 public class Utils {
     private static final String BASE_URL = "http://192.168.43.200";
     static final String GET_URL = BASE_URL + "/get";
-    public static final int RED = 0;
-    public static final int GREEN = 1;
-    public static final int BLUE = 2;
-    public static final int WHITE = 3;
-    public static final int BRIGHTNESS = 4;
-    public static final int TEMP = 5;
+    private static final String RGB_STRING_FORMAT = "rgb:r:%d,g:%d,b:%d,w:%d";
 
-    public static String buildUrlRgb(int red, int green, int blue, int white) {
+    public static String buildRgbMessage(int red, int green, int blue, int white) {
         // Not checking max/min values, as the server does that anyway
-        return BASE_URL + "/setrgb?r=" + red
-                + "&g=" + green
-                + "&b=" + blue
-                + "&w=" + white;
+        return String.format(Locale.ENGLISH,
+                RGB_STRING_FORMAT, red, green, blue, white);
     }
 
     /**
@@ -36,7 +31,7 @@ public class Utils {
      * @param white The current white value
      * @return URL with RGB values of the target URL, and the given white value
      */
-    static TempModel buildUrlHellandTemp(int temp, int white) {
+    static TempModel buildHellandTempMessage(int temp, int white) {
         int r;
         int g;
         int b;
@@ -77,7 +72,7 @@ public class Utils {
                     b = 255;
             }
         }
-        return new TempModel(r, g, b, white, buildUrlRgb(r, g, b, white));
+        return new TempModel(r, g, b, white, buildRgbMessage(r, g, b, white));
     }
 
     static TempModel parseJson(String json) {

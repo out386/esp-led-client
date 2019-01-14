@@ -9,13 +9,13 @@ public class TempModel {
     final int g;
     final int b;
     final int w;
-    final String url;
+    final String data;
 
-    public TempModel(int r, int g, int b, int w, String url) {
+    public TempModel(int r, int g, int b, int w, String data) {
         this.r = r;
         this.g = g;
         this.b = b;
         this.w = w;
-        this.url = url;
+        this.data = data;
     }
 }

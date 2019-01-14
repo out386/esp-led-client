@@ -14,10 +14,13 @@ import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import gh.out386.lamp.MainActivity;
 import gh.out386.lamp.R;
 import gh.out386.lamp.RandomRunnable;
-import gh.out386.lamp.RequestRunnable;
+import gh.out386.lamp.network.RequestRunnable;
 import gh.out386.lamp.Utils;
 
 public class RandomService extends Service {
@@ -29,6 +32,8 @@ public class RandomService extends Service {
     private MutableLiveData<Boolean> isRandomStarted = new MutableLiveData<>();
     private RandomRunnable randomRunnable;
     private Thread randomThread;
+    private ExecutorService adjustExecutor;
+    private RequestRunnable adjustRunnable;
     private PowerManager.WakeLock wakeLock;
     /**
      * Used because white is not touched here. The server will set white to 0 if the URL doesn't have a white.
@@ -104,8 +109,12 @@ public class RandomService extends Service {
         } else {
             randomRunnable.start();
         }
+        if (adjustExecutor == null)
+            adjustExecutor = Executors.newSingleThreadExecutor();
         if (randomThread == null)
             randomThread = new Thread(randomRunnable);
+        if (adjustRunnable == null)
+            adjustRunnable = new RequestRunnable(null);
         randomThread.start();
         isRandomStarted.setValue(true);
     }
@@ -132,12 +141,10 @@ public class RandomService extends Service {
     }
 
     private void adjustRgb(int r, int g, int b) {
-        String url = Utils.buildUrlRgb(r, g, b, white);
-        // The HTTP requests should only be made once every 40s or thereabouts, to avoid flooding the server
-        // Relying on the RandomRunnable to set the delay
-        // The app is for use on local networks, so this should complete fast without errors.
-        // No point in having a client-side crossfade over a network with a 80ms ping.
-        new Thread(new RequestRunnable(url)).start();
+        String data = Utils.buildRgbMessage(r, g, b, white);
+        // The HTTP requests should only be made once every 40ms or thereabouts, to avoid flooding the server
+        // Relying on the RandomRunnable to set the delay.
+        adjustRunnable.sendData(data);
     }
 
     public MutableLiveData<Integer> getRed() {
