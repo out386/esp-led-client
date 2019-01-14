@@ -16,6 +16,8 @@ import com.sdsmdg.harjot.crollerTest.Croller;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import gh.out386.lamp.network.RequestRunnable;
+
 public class MainActivity extends Activity implements ProcessMusic.VisListener {
     private final int FIRE_DELAY_MS = 40;
     private Croller redSeek;
@@ -164,7 +166,7 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
             if (setValuesRunnable != null)
                 setValuesHandler.removeCallbacks(setValuesRunnable);
             setValuesRunnable = () -> {
-                String url = Utils.buildUrlRgb(red, green, blue, white);
+                String url = Utils.buildRgbMessage(red, green, blue, white);
                 resetBr();
                 httpThreadPool.execute(new RequestRunnable(url));
             };
@@ -183,13 +185,13 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
             if (setValuesRunnable != null)
                 setValuesHandler.removeCallbacks(setValuesRunnable);
             setValuesRunnable = () -> {
-                TempModel model = Utils.buildUrlHellandTemp(temp, white);
+                TempModel model = Utils.buildHellandTempMessage(temp, white);
                 red = model.r;
                 green = model.g;
                 blue = model.b;
                 setSeek();
                 resetBr();
-                httpThreadPool.execute(new RequestRunnable(model.url));
+                httpThreadPool.execute(new RequestRunnable(model.data));
             };
             lastFireTime = currentTime;
             setValuesHandler.postDelayed(setValuesRunnable, FIRE_DELAY_MS);
@@ -233,7 +235,7 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
                     brResetRunnable = this::resetBr;
                     brResetHandler.postDelayed(brResetRunnable, 1000);
                 }
-                String url = Utils.buildUrlRgb(red, green, blue, white);
+                String url = Utils.buildRgbMessage(red, green, blue, white);
                 httpThreadPool.execute(new RequestRunnable(url));
                 setSeek();
             };

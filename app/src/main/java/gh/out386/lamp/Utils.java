@@ -3,20 +3,21 @@ package gh.out386.lamp;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Locale;
+
 /**
  * Created by J on 11/9/2017.
  */
 
 public class Utils {
-    final static String BASE_URL = "http://192.168.43.200";
+    private final static String BASE_URL = "http://192.168.43.200";
     final static String GET_URL = BASE_URL + "/get";
+    private static final String RGB_STRING_FORMAT = "rgb:r:%d,g:%d,b:%d,w:%d";
 
-    static String buildUrlRgb(int red, int green, int blue, int white) {
+    static String buildRgbMessage(int red, int green, int blue, int white) {
         // Not checking max/min values, as the server does that anyway
-        return BASE_URL + "/setrgb?r=" + red
-        + "&g=" + green
-        + "&b=" + blue
-        + "&w=" + white;
+        return String.format(Locale.ENGLISH,
+                RGB_STRING_FORMAT, red, green, blue, white);
     }
 
     /**
@@ -26,7 +27,7 @@ public class Utils {
      * @param white The current white value
      * @return URL with RGB values of the target URL, and the given white value
      */
-    static TempModel buildUrlHellandTemp(int temp, int white) {
+    static TempModel buildHellandTempMessage(int temp, int white) {
         int r;
         int g;
         int b;
@@ -67,7 +68,7 @@ public class Utils {
                     b = 255;
             }
         }
-        return new TempModel(r, g, b, white, buildUrlRgb(r, g, b, white));
+        return new TempModel(r, g, b, white, buildRgbMessage(r, g, b, white));
     }
 
     static TempModel parseJson(String json) {
