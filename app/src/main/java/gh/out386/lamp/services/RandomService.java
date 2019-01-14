@@ -111,11 +111,12 @@ public class RandomService extends Service {
         }
         if (adjustExecutor == null)
             adjustExecutor = Executors.newSingleThreadExecutor();
-        if (randomThread == null)
+        if (randomThread == null) {
             randomThread = new Thread(randomRunnable);
+            randomThread.start();
+        }
         if (adjustRunnable == null)
             adjustRunnable = new RequestRunnable(null);
-        randomThread.start();
         isRandomStarted.setValue(true);
     }
 
@@ -136,6 +137,7 @@ public class RandomService extends Service {
         if (randomRunnable != null)
             randomRunnable.stop();
         isRandomStarted.setValue(false);
+        randomThread = null;
         if (wakeLock != null && wakeLock.isHeld())
             wakeLock.release();
     }
