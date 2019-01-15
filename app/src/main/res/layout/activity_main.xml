@@ -7,95 +7,29 @@
     android:orientation="vertical"
     tools:context="gh.out386.lamp.MainActivity">
 
-
-    <SeekBar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/averageSeek"
-        android:max="12"/>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
+        android:layout_weight="2"
+        android:orientation="vertical"
         android:padding="10dp">
 
-        <com.sdsmdg.harjot.crollerTest.Croller
-            android:id="@+id/redScroller"
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/averageSeek"
+            android:layout_marginTop="20dp"
+            android:max="12"/>
 
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_margin="20dp"
-            app:back_circle_color="#EDEDED"
-            app:indicator_color="#0B3C49"
-            app:indicator_width="10"
-            app:is_continuous="true"
-            app:label="@string/seek_red"
-            app:label_color="#000000"
-            app:main_circle_color="#FFFFFF"
-            app:max="255"
-            app:min="0"
-            app:progress_primary_color="#0B3C49"
-            app:progress_primary_stroke_width="10"
-            app:progress_secondary_stroke_width="8"
-            app:back_circle_radius="20"
-            app:progress_secondary_color="#EEEEEE"
-            app:start_offset="45"/>
-
-        <com.sdsmdg.harjot.crollerTest.Croller
-            android:id="@+id/greenScroller"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_margin="20dp"
-            app:back_circle_color="#EDEDED"
-            app:indicator_color="#0B3C49"
-            app:indicator_width="10"
-            app:is_continuous="true"
-            app:label="@string/seek_green"
-            app:label_color="#000000"
-            app:main_circle_color="#FFFFFF"
-            app:max="255"
-            app:min="0"
-            app:progress_primary_color="#0B3C49"
-            app:progress_secondary_color="#EEEEEE"
-            app:progress_primary_stroke_width="10"
-            app:progress_secondary_stroke_width="8"
-            app:back_circle_radius="20"
-            app:start_offset="45"  />
     </LinearLayout>
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:padding="10dp">
-
-        <com.sdsmdg.harjot.crollerTest.Croller
-            android:id="@+id/blueScroller"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_margin="20dp"
-            app:back_circle_color="#EDEDED"
-            app:indicator_color="#0B3C49"
-            app:indicator_width="10"
-            app:is_continuous="true"
-            app:label="@string/seek_blue"
-            app:label_color="#000000"
-            app:main_circle_color="#FFFFFF"
-            app:max="255"
-            app:min="0"
-            app:progress_primary_color="#0B3C49"
-            app:progress_primary_stroke_width="10"
-            app:progress_secondary_stroke_width="8"
-            app:back_circle_radius="20"
-            app:progress_secondary_color="#EEEEEE"
-            app:start_offset="45" />
+        android:padding="10dp"
+        android:background="@color/colorPrimaryDark">
 
         <com.sdsmdg.harjot.crollerTest.Croller
             android:id="@+id/whiteScroller"
@@ -112,37 +46,6 @@
             app:main_circle_color="#FFFFFF"
             app:max="255"
             app:min="0"
-            app:progress_primary_color="#0B3C49"
-            app:progress_secondary_color="#EEEEEE"
-            app:progress_primary_stroke_width="10"
-            app:progress_secondary_stroke_width="8"
-            app:back_circle_radius="20"
-            app:start_offset="45" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:padding="10dp"
-        android:background="@color/colorPrimaryDark">
-        <com.sdsmdg.harjot.crollerTest.Croller
-            android:id="@+id/tempScroller"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_margin="20dp"
-            app:back_circle_color="#EDEDED"
-            app:indicator_color="#0B3C49"
-            app:indicator_width="10"
-            app:is_continuous="true"
-            app:label="@string/seek_temp"
-            app:label_color="#000000"
-            app:main_circle_color="#FFFFFF"
-            app:max="11000"
-            app:min="1000"
             app:progress_primary_color="#0B3C49"
             app:progress_secondary_color="#EEEEEE"
             app:progress_primary_stroke_width="10"

@@ -20,25 +20,20 @@ import gh.out386.lamp.network.RequestRunnable;
 
 public class MainActivity extends Activity implements ProcessMusic.VisListener {
     private final int FIRE_DELAY_MS = 40;
-    private Croller redSeek;
-    private Croller greenSeek;
-    private Croller blueSeek;
     private Croller whiteSeek;
-    private Croller tempSeek;
     private Croller brSeek;
+    private SeekBar averageSeek;
     private ExecutorService httpThreadPool;
     private int red = 0;
     private int green = 0;
     private int blue = 0;
     private int white = 0;
-    private int temp = 0;
     private int oR = 0;
     private int oG = 0;
     private int oB = 0;
     private int oW = 0;
     private int brightness = 0;
     private boolean isRgbChanged = false;
-    private boolean isTempChanged = false;
     private boolean isSeekChanging = false;
     private boolean isSBrChanging = false;
     private boolean isChangeForTemp = false;
@@ -63,19 +58,23 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
         httpThreadPool = Executors.newSingleThreadExecutor();
         setValuesHandler = new Handler();
         brResetHandler = new Handler();
-        redSeek = findViewById(R.id.redScroller);
-        greenSeek = findViewById(R.id.greenScroller);
-        blueSeek = findViewById(R.id.blueScroller);
         whiteSeek = findViewById(R.id.whiteScroller);
-        tempSeek = findViewById(R.id.tempScroller);
         brSeek = findViewById(R.id.brScroller);
-        SeekBar averageSeek = findViewById(R.id.averageSeek);
+        averageSeek = findViewById(R.id.averageSeek);
         brSeek.setProgress(100);
 
         averageSeek.setProgress(3);
         processMusic = new ProcessMusic(this, averageSeek.getProgress());
         processMusic.initVisualizer();
 
+        setupSeekbars();
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(finishReceiver, new IntentFilter(GetAsync.ACTION_SERVER_FAIL));
+        new GetAsync(this, whiteSeek)
+                .execute(Utils.GET_URL);
+    }
+
+    private void setupSeekbars() {
         averageSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -89,71 +88,32 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
 
-            }
-        });
-        redSeek.setOnProgressChangedListener((progress) -> {
-            // Prevents issues when listener fires on activity create
-            // Assuming all Crollers use the same min
-            if (progress > redSeek.getMin())
-                isRgbChanged = true;
-            if (isRgbChanged && !isSeekChanging) {
-                red = progress;
-                setRgb();
-            }
-        });
-        greenSeek.setOnProgressChangedListener(progress -> {
-            if (progress > redSeek.getMin())
-                isRgbChanged = true;
-            if (isRgbChanged && !isSeekChanging) {
-                green = progress;
-                setRgb();
-            }
-        });
-        blueSeek.setOnProgressChangedListener(progress -> {
-            if (progress > redSeek.getMin())
-                isRgbChanged = true;
-            if (isRgbChanged && !isSeekChanging) {
-                blue = progress;
-                setRgb();
-            }
-        });
         whiteSeek.setOnProgressChangedListener(progress -> {
-            if (progress > redSeek.getMin())
+            if (progress > whiteSeek.getMin())
                 isRgbChanged = true;
             if (isRgbChanged && !isSeekChanging) {
                 white = progress;
                 setRgb();
             }
         });
+
         brSeek.setOnProgressChangedListener((progress) -> {
             // Prevents issues when listener fires on activity create
             // Assuming all Crollers use the same min
-            if (progress > redSeek.getMin())
+            if (progress > brSeek.getMin())
                 isRgbChanged = true;
             if (isRgbChanged && !isSBrChanging) {
                 brightness = progress;
                 setBrightness();
             }
         });
-        tempSeek.setOnProgressChangedListener(progress -> {
-            if (progress > tempSeek.getMin())
-                isTempChanged = true;
-            if (isTempChanged) {
-                temp = progress;
-                setTemp();
-            }
-        });
-
-        LocalBroadcastManager.getInstance(this)
-                .registerReceiver(finishReceiver, new IntentFilter(GetAsync.ACTION_SERVER_FAIL));
-        new GetAsync(this, redSeek, greenSeek, blueSeek, whiteSeek)
-                .execute(Utils.GET_URL);
     }
 
     private void setRgb() {
@@ -169,29 +129,6 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
                 String url = Utils.buildRgbMessage(red, green, blue, white);
                 resetBr();
                 httpThreadPool.execute(new RequestRunnable(url));
-            };
-            lastFireTime = currentTime;
-            setValuesHandler.postDelayed(setValuesRunnable, FIRE_DELAY_MS);
-        }
-    }
-
-    private void setTemp() {
-        if (!isChangeForTemp) {
-            isChangeForTemp = true;
-            lastFireTime = 0;
-        }
-        long currentTime = SystemClock.uptimeMillis();
-        if (currentTime - lastFireTime >= FIRE_DELAY_MS) {
-            if (setValuesRunnable != null)
-                setValuesHandler.removeCallbacks(setValuesRunnable);
-            setValuesRunnable = () -> {
-                TempModel model = Utils.buildHellandTempMessage(temp, white);
-                red = model.r;
-                green = model.g;
-                blue = model.b;
-                setSeek();
-                resetBr();
-                httpThreadPool.execute(new RequestRunnable(model.data));
             };
             lastFireTime = currentTime;
             setValuesHandler.postDelayed(setValuesRunnable, FIRE_DELAY_MS);
@@ -256,9 +193,6 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
 
     private void setSeek() {
         isSeekChanging = true;
-        redSeek.setProgress(red);
-        greenSeek.setProgress(green);
-        blueSeek.setProgress(blue);
         whiteSeek.setProgress(white);
         new Handler().postDelayed(() -> isSeekChanging = false, 2000);
     }

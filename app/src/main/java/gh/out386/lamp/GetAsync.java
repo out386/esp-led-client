@@ -25,16 +25,10 @@ public class GetAsync extends AsyncTask<String, Void, String> {
     static final String ACTION_SERVER_FAIL = "serverFail";
     private ProgressDialog pd;
     private WeakReference<Context> contextRef;
-    private WeakReference<Croller> redSeekRef;
-    private WeakReference<Croller> greenSeekRef;
-    private WeakReference<Croller> blueSeekRef;
     private WeakReference<Croller> whiteSeekRef;
 
-    public GetAsync(Context context, Croller red, Croller green, Croller blue, Croller white) {
+    public GetAsync(Context context, Croller white) {
         contextRef = new WeakReference<>(context);
-        redSeekRef = new WeakReference<>(red);
-        greenSeekRef = new WeakReference<>(green);
-        blueSeekRef = new WeakReference<>(blue);
         whiteSeekRef = new WeakReference<>(white);
         pd = new ProgressDialog(context);
     }
@@ -70,7 +64,6 @@ public class GetAsync extends AsyncTask<String, Void, String> {
             BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             while ((s = br.readLine()) != null)
                 o.append(s);
-            //Log.i("response", "run: " + o.toString());
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -99,17 +92,9 @@ public class GetAsync extends AsyncTask<String, Void, String> {
             }
             return;
         }
-        Croller red;
-        Croller green;
-        Croller blue;
+
         Croller white;
         TempModel model = Utils.parseJson(s);
-        if ((red = redSeekRef.get()) != null)
-            red.setProgress(model.r);
-        if ((green = greenSeekRef.get()) != null)
-            green.setProgress(model.g);
-        if ((blue = blueSeekRef.get()) != null)
-            blue.setProgress(model.b);
         if ((white = whiteSeekRef.get()) != null)
             white.setProgress(model.w);
         pd.dismiss();
