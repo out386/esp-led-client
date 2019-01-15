@@ -7,6 +7,7 @@
     android:orientation="vertical"
     tools:context="gh.out386.lamp.MainActivity">
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -15,29 +16,88 @@
         android:padding="10dp">
 
         <SeekBar
+            android:id="@+id/averageSeek"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/averageSeek"
             android:layout_marginTop="20dp"
-            android:max="12"/>
+            android:max="15"
+            android:progressTint="@color/seekAvg"
+            android:thumbTint="@color/seekAvg" />
+
+        <SeekBar
+            android:id="@+id/redLowSeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:max="64"
+            android:progressTint="@color/seekRed"
+            android:thumbTint="@color/seekRed" />
+
+        <SeekBar
+            android:id="@+id/redHighSeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:max="64"
+            android:progressTint="@color/seekRed"
+            android:thumbTint="@color/seekRed" />
+
+        <SeekBar
+            android:id="@+id/greenLowSeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:max="64"
+            android:progressTint="@color/seekGreen"
+            android:thumbTint="@color/seekGreen" />
+
+        <SeekBar
+            android:id="@+id/greenHighSeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:max="64"
+            android:progressTint="@color/seekGreen"
+            android:thumbTint="@color/seekGreen" />
+
+        <SeekBar
+            android:id="@+id/blueLowSeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:max="64"
+            android:progressTint="@color/seekBlue"
+            android:thumbTint="@color/seekBlue" />
+
+        <SeekBar
+            android:id="@+id/blueHighSeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:max="64"
+            android:progressTint="@color/seekBlue"
+            android:thumbTint="@color/seekBlue" />
+
 
     </LinearLayout>
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:background="@color/colorPrimaryDark"
         android:orientation="horizontal"
-        android:padding="10dp"
-        android:background="@color/colorPrimaryDark">
+        android:padding="10dp">
 
         <com.sdsmdg.harjot.crollerTest.Croller
             android:id="@+id/whiteScroller"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
             android:layout_margin="20dp"
+            android:layout_weight="1"
             app:back_circle_color="#EDEDED"
+            app:back_circle_radius="20"
             app:indicator_color="#0B3C49"
             app:indicator_width="10"
             app:is_continuous="true"
@@ -47,19 +107,19 @@
             app:max="255"
             app:min="0"
             app:progress_primary_color="#0B3C49"
-            app:progress_secondary_color="#EEEEEE"
             app:progress_primary_stroke_width="10"
+            app:progress_secondary_color="#EEEEEE"
             app:progress_secondary_stroke_width="8"
-            app:back_circle_radius="20"
             app:start_offset="45" />
 
         <com.sdsmdg.harjot.crollerTest.Croller
             android:id="@+id/brScroller"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
             android:layout_margin="20dp"
+            android:layout_weight="1"
             app:back_circle_color="#EDEDED"
+            app:back_circle_radius="20"
             app:indicator_color="#0B3C49"
             app:indicator_width="10"
             app:is_continuous="true"
@@ -69,10 +129,9 @@
             app:max="200"
             app:min="0"
             app:progress_primary_color="#0B3C49"
-            app:progress_secondary_color="#EEEEEE"
             app:progress_primary_stroke_width="10"
+            app:progress_secondary_color="#EEEEEE"
             app:progress_secondary_stroke_width="8"
-            app:back_circle_radius="20"
             app:start_offset="45" />
 
     </LinearLayout>

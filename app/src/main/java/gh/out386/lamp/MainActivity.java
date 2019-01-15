@@ -5,10 +5,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Pair;
 import android.widget.SeekBar;
 
 import com.sdsmdg.harjot.crollerTest.Croller;
@@ -19,10 +22,23 @@ import java.util.concurrent.Executors;
 import gh.out386.lamp.network.RequestRunnable;
 
 public class MainActivity extends Activity implements ProcessMusic.VisListener {
-    private final int FIRE_DELAY_MS = 40;
+    private static final int FIRE_DELAY_MS = 40;
+    static final String RED_LOW_SEEK = "redLow";
+    static final String RED_HIGH_SEEK = "redHigh";
+    static final String GREEN_LOW_SEEK = "greenLow";
+    static final String GREEN_HIGH_SEEK = "greenHigh";
+    static final String BLUE_LOW_SEEK = "blueLow";
+    static final String BLUE_HIGH_SEEK = "blueHigh";
+
     private Croller whiteSeek;
     private Croller brSeek;
     private SeekBar averageSeek;
+    private SeekBar redLowSeek;
+    private SeekBar redHighSeek;
+    private SeekBar greenLowSeek;
+    private SeekBar greenHighSeek;
+    private SeekBar blueLowSeek;
+    private SeekBar blueHighSeek;
     private ExecutorService httpThreadPool;
     private int red = 0;
     private int green = 0;
@@ -43,6 +59,7 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
     private Runnable brResetRunnable;
     private long lastFireTime;
     private ProcessMusic processMusic;
+    private SharedPreferences prefs;
     private BroadcastReceiver finishReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -55,19 +72,25 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         httpThreadPool = Executors.newSingleThreadExecutor();
         setValuesHandler = new Handler();
         brResetHandler = new Handler();
         whiteSeek = findViewById(R.id.whiteScroller);
         brSeek = findViewById(R.id.brScroller);
         averageSeek = findViewById(R.id.averageSeek);
-        brSeek.setProgress(100);
+        redLowSeek = findViewById(R.id.redLowSeek);
+        redHighSeek = findViewById(R.id.redHighSeek);
+        greenLowSeek = findViewById(R.id.greenLowSeek);
+        greenHighSeek = findViewById(R.id.greenHighSeek);
+        blueLowSeek = findViewById(R.id.blueLowSeek);
+        blueHighSeek = findViewById(R.id.blueHighSeek);
 
         averageSeek.setProgress(3);
-        processMusic = new ProcessMusic(this, averageSeek.getProgress());
+        processMusic = new ProcessMusic(this, averageSeek.getProgress(), prefs);
+        setupSeekbars();
         processMusic.initVisualizer();
 
-        setupSeekbars();
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(finishReceiver, new IntentFilter(GetAsync.ACTION_SERVER_FAIL));
         new GetAsync(this, whiteSeek)
@@ -75,13 +98,23 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
     }
 
     private void setupSeekbars() {
+        brSeek.setProgress(100);
+        Pair<Integer, Pair<Integer, Integer>> buckets = processMusic.getBuckets();
+        redLowSeek.setProgress(prefs.getInt(RED_LOW_SEEK, 0));
+        redHighSeek.setProgress(prefs.getInt(RED_HIGH_SEEK, buckets.first));
+        greenLowSeek.setProgress(prefs.getInt(GREEN_LOW_SEEK, buckets.first));
+        greenHighSeek.setProgress(prefs.getInt(GREEN_HIGH_SEEK, buckets.second.first));
+        blueLowSeek.setProgress(prefs.getInt(BLUE_LOW_SEEK, buckets.second.first));
+        blueHighSeek.setProgress(prefs.getInt(BLUE_HIGH_SEEK, buckets.second.second));
+
+        SeekbarListener seekbarListener = new SeekbarListener();
         averageSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser && progress > 0) {
                     if (processMusic != null)
                         processMusic.stop();
-                    processMusic = new ProcessMusic(MainActivity.this, progress);
+                    processMusic = new ProcessMusic(MainActivity.this, progress, prefs);
                     processMusic.initVisualizer();
                 }
             }
@@ -94,6 +127,12 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
+        redLowSeek.setOnSeekBarChangeListener(seekbarListener);
+        redHighSeek.setOnSeekBarChangeListener(seekbarListener);
+        greenLowSeek.setOnSeekBarChangeListener(seekbarListener);
+        greenHighSeek.setOnSeekBarChangeListener(seekbarListener);
+        blueLowSeek.setOnSeekBarChangeListener(seekbarListener);
+        blueHighSeek.setOnSeekBarChangeListener(seekbarListener);
 
         whiteSeek.setOnProgressChangedListener(progress -> {
             if (progress > whiteSeek.getMin())
@@ -217,4 +256,37 @@ public class MainActivity extends Activity implements ProcessMusic.VisListener {
         LocalBroadcastManager.getInstance(this)
                 .unregisterReceiver(finishReceiver);
     }
+
+    private class SeekbarListener implements SeekBar.OnSeekBarChangeListener {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if (!fromUser)
+                return;
+            SharedPreferences.Editor prefsEditor = prefs.edit();
+
+            if (redLowSeek == seekBar)
+                prefsEditor.putInt(RED_LOW_SEEK, progress);
+            else if (redHighSeek == seekBar)
+                prefsEditor.putInt(RED_HIGH_SEEK, progress);
+            else if (greenLowSeek == seekBar)
+                prefsEditor.putInt(GREEN_LOW_SEEK, progress);
+            else if (greenHighSeek == seekBar)
+                prefsEditor.putInt(GREEN_HIGH_SEEK, progress);
+            else if (blueLowSeek == seekBar)
+                prefsEditor.putInt(BLUE_LOW_SEEK, progress);
+            else if (blueHighSeek == seekBar)
+                prefsEditor.putInt(BLUE_HIGH_SEEK, progress);
+
+            prefsEditor.apply();
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+        }
+    }
+
 }

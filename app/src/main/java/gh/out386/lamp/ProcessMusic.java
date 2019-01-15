@@ -1,26 +1,38 @@
 package gh.out386.lamp;
 
+import android.content.SharedPreferences;
 import android.media.audiofx.Visualizer;
 import android.util.Log;
 import android.util.Pair;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
+import static gh.out386.lamp.MainActivity.BLUE_HIGH_SEEK;
+import static gh.out386.lamp.MainActivity.BLUE_LOW_SEEK;
+import static gh.out386.lamp.MainActivity.GREEN_HIGH_SEEK;
+import static gh.out386.lamp.MainActivity.GREEN_LOW_SEEK;
+import static gh.out386.lamp.MainActivity.RED_HIGH_SEEK;
+import static gh.out386.lamp.MainActivity.RED_LOW_SEEK;
+
 /**
  * Created by J on 12/2/2017.
  */
 
 public class ProcessMusic {
+    private final static int RANGE = 64;
+    private final static int MAX_RANGE = 1024;
     private final int SLOP = 5;
     private final int OFFSET = 5;
-    private final int MULTIPLIER = 6;
-    private final int MULTIPLIER_L = 5;
+    private final int MULTIPLIER = 40;
+    private final int MULTIPLIER_L = 30;
     private int averageLength;
-    int dA, dB, dC;
+    private int bucketALow;
+    private int bucketAHigh;
+    private int bucketBLow;
+    private int bucketBHigh;
+    private int bucketCLow;
+    private int bucketCHigh;
     private Visualizer visualizer;
-    private Pair<Integer, Pair<Integer, Integer>> buckets;
-    private int range;
-    private int maxRange;
     private VisListener visListener;
     private ArrayBlockingQueue<Float> averagingQueueL;
     private ArrayBlockingQueue<Float> averagingQueueM;
@@ -28,20 +40,29 @@ public class ProcessMusic {
     private float averageL = 0f;
     private float averageM = 0f;
     private float averageH = 0f;
+    private SharedPreferences prefs;
+    private PrefsListener prefsListener;
 
-    public ProcessMusic(VisListener visListener, int averageLength) {
+    public ProcessMusic(VisListener visListener, int averageLength, SharedPreferences preferences) {
         this.visListener = visListener;
         this.averageLength = averageLength;
-        range = 24;//Visualizer.getCaptureSizeRange()[0];
-        maxRange = 1024;//Visualizer.getCaptureSizeRange()[1];
+        prefs = preferences;
+        prefsListener = new PrefsListener();
         visualizer = new Visualizer(0);
-        visualizer.setCaptureSize(maxRange);
+        visualizer.setCaptureSize(MAX_RANGE);
         visualizer.setScalingMode(Visualizer.SCALING_MODE_NORMALIZED);
-        buckets = getBuckets(range, maxRange / 2 - 2);
-        dA = buckets.first;
-        dB = buckets.second.first - buckets.first;
-        dC = buckets.second.second - buckets.second.first;
+        Pair<Integer, Pair<Integer, Integer>> buckets =
+                generateBuckets(RANGE, MAX_RANGE / 2 - 2);
 
+        readBuckets(buckets);
+        bucketALow = 0;
+        bucketAHigh = buckets.first;
+        bucketBLow = bucketAHigh;
+        bucketBHigh = buckets.second.first - buckets.first;
+        bucketCLow = bucketBHigh;
+        bucketCHigh = buckets.second.second - buckets.second.first;
+
+        prefs.registerOnSharedPreferenceChangeListener(prefsListener);
         averagingQueueL = new ArrayBlockingQueue<>(averageLength, true);
         averagingQueueM = new ArrayBlockingQueue<>(averageLength, true);
         averagingQueueH = new ArrayBlockingQueue<>(averageLength, true);
@@ -49,6 +70,37 @@ public class ProcessMusic {
             averagingQueueL.offer(-1f);
             averagingQueueM.offer(-1f);
             averagingQueueH.offer(-1f);
+        }
+    }
+
+    Pair<Integer, Pair<Integer, Integer>> getBuckets() {
+        return new Pair<>(bucketAHigh, new Pair<>(bucketBHigh, bucketCHigh));
+    }
+
+    private void readBuckets(Pair<Integer, Pair<Integer, Integer>> buckets) {
+        bucketALow = prefs.getInt(RED_LOW_SEEK, 0);
+        bucketAHigh = prefs.getInt(RED_HIGH_SEEK, buckets.first);
+        bucketBLow = prefs.getInt(GREEN_LOW_SEEK, buckets.first);
+        bucketBHigh = prefs.getInt(GREEN_HIGH_SEEK, buckets.second.first);
+        bucketCLow = prefs.getInt(BLUE_LOW_SEEK, buckets.second.first);
+        bucketCHigh = prefs.getInt(BLUE_HIGH_SEEK, buckets.second.second);
+    }
+
+    private class PrefsListener implements SharedPreferences.OnSharedPreferenceChangeListener {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            if (RED_LOW_SEEK.equals(key))
+                bucketALow = sharedPreferences.getInt(RED_LOW_SEEK, bucketALow);
+            else if (RED_HIGH_SEEK.equals(key))
+                bucketAHigh = sharedPreferences.getInt(RED_HIGH_SEEK, bucketAHigh);
+            else if (GREEN_LOW_SEEK.equals(key))
+                bucketBLow = sharedPreferences.getInt(GREEN_LOW_SEEK, bucketBLow);
+            else if (GREEN_HIGH_SEEK.equals(key))
+                bucketBHigh = sharedPreferences.getInt(GREEN_HIGH_SEEK, bucketBHigh);
+            else if (BLUE_LOW_SEEK.equals(key))
+                bucketCLow = sharedPreferences.getInt(BLUE_LOW_SEEK, bucketCLow);
+            else if (BLUE_HIGH_SEEK.equals(key))
+                bucketCHigh = sharedPreferences.getInt(BLUE_HIGH_SEEK, bucketCHigh);
         }
     }
 
@@ -90,85 +142,84 @@ public class ProcessMusic {
                 //new Thread(() -> {
 
 
+                int amplituides[] = new int[MAX_RANGE / 2];
+                //System.out.print(Visualizer.getCaptureSizeRange()[1] + " ");
+                for (int i = 1; i < MAX_RANGE / 2; i++) {
+                    byte rfk = fft[i * 2];
+                    byte ifk = fft[i * 2 + 1];
+                    //amplituides[i - 1] = (int) (Math.hypot(rfk, ifk));
+                    amplituides[i - 1] = rfk * rfk + ifk * ifk;
+                }
 
-                int amplituides[] = new int[maxRange / 2];
-                    //System.out.print(Visualizer.getCaptureSizeRange()[1] + " ");
-                    for (int i = 1; i < maxRange / 2; i++) {
-                        byte rfk = fft[i * 2];
-                        byte ifk = fft[i * 2 + 1];
-                        //amplituides[i - 1] = (int) (Math.hypot(rfk, ifk));
-                        amplituides[i - 1] = rfk * rfk + ifk * ifk;
-                    }
+                float a, b, c;
+                int countA = bucketAHigh - bucketALow;
+                int countB = bucketBHigh - bucketBLow;
+                int countC = bucketCHigh - bucketCLow;
 
-                    float l, m, h;
-                    int dAT = dA;
-                    int dBT = dB;
-                    int dCT = dC;
-
-                    int temp = 0;
-                    for (int i = 0; i < buckets.first; i++) {
-                        if (amplituides[i] > SLOP)
-                            temp = temp + amplituides[i];
-                        else
-                            dAT--;
-                    }
-                    if (dAT > 0)
-                        l = temp / dAT;
+                int temp = 0;
+                for (int i = bucketALow; i < bucketAHigh; i++) {
+                    if (amplituides[i] > SLOP)
+                        temp = temp + amplituides[i];
                     else
-                        l = OFFSET;
-                    //l = (float) Math.sqrt(l);
-                    //l = (float) (50 * Math.log10(l));
-                    //l = l * MULTIPLIER_L;
-                    if (l > 1023)
-                        l = 1023;
+                        countA--;
+                }
+                if (countA > 0)
+                    a = temp / countA;
+                else
+                    a = OFFSET;
+                a = 2 * (float) Math.sqrt(a);
+                //a = (float) (20 * Math.log10(a));
+                a = a * MULTIPLIER_L;
+                if (a > 1023)
+                    a = 1023;
 
-                    temp = 0;
-                    for (int i = buckets.first; i < buckets.second.first; i++) {
-                        if (amplituides[i] > SLOP)
-                            temp = temp + amplituides[i];
-                        else dBT--;
-                    }
-                    if (dBT > 0)
-                        m = temp / dBT;
-                    else
-                        m = OFFSET;
-                    //m = (float) Math.sqrt(m);
-                    //m = (float) (50 * Math.log10(m));
-                    //m = m * MULTIPLIER;
-                    if (m > 1023)
-                        m = 1023;
+                temp = 0;
+                for (int i = bucketBLow; i < bucketBHigh; i++) {
+                    if (amplituides[i] > SLOP)
+                        temp = temp + amplituides[i];
+                    else countB--;
+                }
+                if (countB > 0)
+                    b = temp / countB;
+                else
+                    b = OFFSET;
+                b = 2 * (float) Math.sqrt(b);
+                //b = (float) (20 * Math.log10(b));
+                b = b * MULTIPLIER;
+                if (b > 1023)
+                    b = 1023;
 
-                    temp = 0;
-                    for (int i = buckets.second.first; i < buckets.second.second; i++) {
-                        if (amplituides[i] > SLOP)
-                            temp = temp + amplituides[i];
-                        else dCT--;
-                    }
-                    if (dCT > 0)
-                        h = temp / dCT;
-                    else
-                        h = OFFSET;
-                    //h = (float) Math.sqrt(h);
-                    //h = (float) (50 * Math.log10(h));
-                    //h = h * MULTIPLIER;
-                    if (h > 1023)
-                        h = 1023;
-                    sendValue(l, m, h);
+                temp = 0;
+                for (int i = bucketCLow; i < bucketCHigh; i++) {
+                    if (amplituides[i] > SLOP)
+                        temp = temp + amplituides[i];
+                    else countC--;
+                }
+                if (countC > 0)
+                    c = temp / countC;
+                else
+                    c = OFFSET;
+                c = 2* (float) Math.sqrt(c);
+                //c = (float) (20 * Math.log10(c));
+                c = c * MULTIPLIER;
+                if (c > 1023)
+                    c = 1023;
+                sendValue(a, b, c);
 
 
-                    //System.out.println("wtf");
-                    for (int amplituide : amplituides) {
+                //System.out.println("wtf");
+                /*for (int amplituide : amplituides) {
                     //    System.out.printf("%4d ", amplituide > 0 ? Math.round(10 * Math.log10(amplituide)) : 0);
-                        System.out.printf("%4d ", amplituide);
-                    }
-                    System.out.println();
+                    System.out.printf("%4d ", amplituide);
+                }*/
+                System.out.println();
                 //}).start();
             }
         }, 20000, false, true);
         visualizer.setEnabled(true);
     }
 
-    private Pair<Integer, Pair<Integer, Integer>> getBuckets(int range, int max) {
+    private Pair<Integer, Pair<Integer, Integer>> generateBuckets(int range, int max) {
         int a, b, c;
         int by3 = range / 3;
         int diff3;
@@ -189,6 +240,7 @@ public class ProcessMusic {
     }
 
     public void stop() {
+        prefs.unregisterOnSharedPreferenceChangeListener(prefsListener);
         visualizer.setEnabled(false);
         visualizer.release();
     }
@@ -210,7 +262,7 @@ public class ProcessMusic {
         averagingQueueL.offer(avgL);
         averagingQueueM.offer(avgM);
         averagingQueueH.offer(avgH);
-        //System.out.printf("%3d %3d %3d\n", Math.round(averageL), Math.round(averageM), Math.round(averageH));
+        System.out.printf("%3d %3d %3d\n", Math.round(averageL), Math.round(averageM), Math.round(averageH));
         visListener.OnValue(Math.round(averageL), Math.round(averageM), Math.round(averageH));
     }
 
