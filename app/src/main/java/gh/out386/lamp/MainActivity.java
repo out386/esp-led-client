@@ -17,15 +17,20 @@ import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.Switch;
 
 import com.sdsmdg.harjot.crollerTest.Croller;
 
+import gh.out386.lamp.network.DiscoverSsdp;
 import gh.out386.lamp.services.RandomService;
 
+import static gh.out386.lamp.Utils.GET_ENDPOINT;
+
 public class MainActivity extends AppCompatActivity {
+    private String targetIp;
     private SeekBar redSeek;
     private SeekBar greenSeek;
     private SeekBar blueSeek;
@@ -78,6 +83,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        targetIp = getIntent().getStringExtra(ScanActivity.IP_ADDR);
+        if (targetIp == null) {
+            //TODO: Start screaming. Loudly.
+            Log.i("MainActivity", "onCreate: Target IP is null");
+            finish();
+        }
+
         redSeek = findViewById(R.id.redScroller);
         greenSeek = findViewById(R.id.greenScroller);
         blueSeek = findViewById(R.id.blueScroller);
@@ -87,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
         randomSwitch = findViewById(R.id.randomSwitch);
         brSeek.setProgress(100);
         rgbViewModel = ViewModelProviders.of(this).get(RgbViewModel.class);
+        rgbViewModel.setTargetIp(targetIp); // This app is getting way too hacky now. Better just use a Factory.
         preventSeekRunnable = () -> isSeekChanging = false;
 
         setupSeekbarColours();
@@ -127,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
             initialBlue.observe(this, value -> rgbViewModel.setBlue(value));
         if (initialWhite != null)
             initialWhite.observe(this, value -> rgbViewModel.setWhite(value));
-        getAsync.execute(Utils.GET_URL);
+        getAsync.execute(String.format(GET_ENDPOINT, targetIp));
     }
 
     private void setupSeekbarColours() {
@@ -314,7 +327,7 @@ public class MainActivity extends AppCompatActivity {
     private void setRandomServiceState(boolean start) {
         if (start) {
             startService(new Intent(getApplicationContext(), RandomService.class));
-            randomService.startRandom(whiteSeek.getProgress());
+            randomService.startRandom(whiteSeek.getProgress(), targetIp);
         } else {
             randomService.stopRandom();
         }

@@ -11,18 +11,20 @@ import java.net.InetAddress;
 
 public class RequestRunnable implements Runnable {
     private String data;
+    private String targetIp;
 
-    public RequestRunnable(String data) {
+    public RequestRunnable(String data, String targetIp) {
         this.data = data;
+        this.targetIp = targetIp;
     }
 
     @Override
     public void run() {
-        sendData(data);
+        sendData(data, targetIp);
     }
 
-    public void sendData(String data) {
-        InetAddress ip = DatagramSingleton.getIP();
+    public void sendData(String data, String targetIp) {
+        InetAddress ip = DatagramSingleton.getIP(targetIp);
         DatagramSocket socket = DatagramSingleton.getSocket();
         if (ip == null || socket == null || data == null) {
             return;

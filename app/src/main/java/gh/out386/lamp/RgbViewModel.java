@@ -33,6 +33,7 @@ public class RgbViewModel extends ViewModel {
     private long lastFireTime;
     private boolean isChangeForTemp = false;
     private final int FIRE_DELAY_MS = 40;
+    private String targetIp;
 
     public RgbViewModel() {
         red.setValue(0);
@@ -45,6 +46,10 @@ public class RgbViewModel extends ViewModel {
         httpThreadPool = Executors.newSingleThreadExecutor();
         setValuesHandler = new Handler();
         brResetHandler = new Handler();
+    }
+
+    public void setTargetIp(String targetIp) {
+        this.targetIp = targetIp;
     }
 
     public void setRed(Integer red) {
@@ -110,7 +115,7 @@ public class RgbViewModel extends ViewModel {
                 String url = Utils.buildRgbMessage(
                         Utils.getInt(red), Utils.getInt(green), Utils.getInt(blue), Utils.getInt(white));
                 resetBr();
-                httpThreadPool.execute(new RequestRunnable(url));
+                httpThreadPool.execute(new RequestRunnable(url, targetIp));
             };
             lastFireTime = currentTime;
             setValuesHandler.postDelayed(setValuesRunnable, FIRE_DELAY_MS);
@@ -142,7 +147,7 @@ public class RgbViewModel extends ViewModel {
                 green.setValue(model.g);
                 blue.setValue(model.b);
                 resetBr();
-                httpThreadPool.execute(new RequestRunnable(model.data));
+                httpThreadPool.execute(new RequestRunnable(model.data, targetIp));
             };
             lastFireTime = currentTime;
             setValuesHandler.postDelayed(setValuesRunnable, FIRE_DELAY_MS);
@@ -184,7 +189,7 @@ public class RgbViewModel extends ViewModel {
                     brResetHandler.postDelayed(brResetRunnable, 1000);
                 }
                 String url = Utils.buildRgbMessage(tR, tG, tB, tW);
-                httpThreadPool.execute(new RequestRunnable(url));
+                httpThreadPool.execute(new RequestRunnable(url, targetIp));
             };
             lastFireTime = currentTime;
             setValuesHandler.postDelayed(setValuesRunnable, FIRE_DELAY_MS);

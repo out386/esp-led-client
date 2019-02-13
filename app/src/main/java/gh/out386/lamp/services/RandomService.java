@@ -95,7 +95,7 @@ public class RandomService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    public void startRandom(int initialWhite) {
+    public void startRandom(int initialWhite, String targetIp) {
         foregroundify();
         setupWakelock();
         white = initialWhite;
@@ -104,7 +104,7 @@ public class RandomService extends Service {
                 red.postValue(r);
                 green.postValue(g);
                 blue.postValue(b);
-                adjustRgb(r, g, b);
+                adjustRgb(r, g, b, targetIp);
             });
         } else {
             randomRunnable.start();
@@ -116,7 +116,7 @@ public class RandomService extends Service {
             randomThread.start();
         }
         if (adjustRunnable == null)
-            adjustRunnable = new RequestRunnable(null);
+            adjustRunnable = new RequestRunnable(null, targetIp);
         isRandomStarted.setValue(true);
     }
 
@@ -142,11 +142,11 @@ public class RandomService extends Service {
             wakeLock.release();
     }
 
-    private void adjustRgb(int r, int g, int b) {
+    private void adjustRgb(int r, int g, int b, String targetIp) {
         String data = Utils.buildRgbMessage(r, g, b, white);
         // The HTTP requests should only be made once every 40ms or thereabouts, to avoid flooding the server
         // Relying on the RandomRunnable to set the delay.
-        adjustRunnable.sendData(data);
+        adjustRunnable.sendData(data, targetIp);
     }
 
     public MutableLiveData<Integer> getRed() {

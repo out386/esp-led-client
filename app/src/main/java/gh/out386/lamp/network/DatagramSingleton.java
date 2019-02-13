@@ -8,7 +8,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 class DatagramSingleton {
-    private static final String SERVER_IP = "192.168.43.200";
     static final int SERVER_PORT = 4258;
 
     private static DatagramSocket socket;
@@ -34,10 +33,10 @@ class DatagramSingleton {
             socket.close();
     }
 
-    static InetAddress getIP() {
+    static InetAddress getIP(String serverIp) {
         if (ip == null)
             try {
-                ip = InetAddress.getByName(SERVER_IP);
+                ip = InetAddress.getByName(serverIp);
             } catch (UnknownHostException e) {
                 //TODO: Propagate the errors to the UI
                 Log.d("DatagramSingleton", e.getMessage());

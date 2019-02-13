@@ -12,8 +12,7 @@ import java.util.Locale;
  */
 
 public class Utils {
-    private static final String BASE_URL = "http://192.168.43.200";
-    static final String GET_URL = BASE_URL + "/get";
+    static final String GET_ENDPOINT = "http://%s/get";
     private static final String RGB_STRING_FORMAT = "rgb:r:%d,g:%d,b:%d,w:%d";
 
     public static String buildRgbMessage(int red, int green, int blue, int white) {
